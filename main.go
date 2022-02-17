@@ -3,6 +3,8 @@ package main
 import (
 	"booking-app/common"
 	"fmt"
+	"sync"
+	"time"
 )
 
 const conferenceName string = "Go Conference"
@@ -17,6 +19,8 @@ type UserData struct {
 	numberOfTickets uint
 }
 
+var wg = sync.WaitGroup{}
+
 func main() {
 
 	greetUsers()
@@ -28,6 +32,9 @@ func main() {
 
 		if isNameValid && isEmailValid && isTicketNumberValid {
 			bookTicket(userTickets, firstname, lastname, email)
+
+			wg.Add(1)
+			go sendTicket(userTickets, firstname, lastname, email)
 
 			var firstnames []string = getFirstnames()
 			fmt.Printf("The first names of bookings are: %v\n", firstnames)
@@ -48,6 +55,7 @@ func main() {
 			}
 		}
 	}
+	wg.Wait()
 }
 
 func greetUsers() {
@@ -103,4 +111,13 @@ func bookTicket(userTickets uint, firstname string, lastname string, email strin
 	fmt.Printf("List of bookings: %v\n", bookings)
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will receive aconfirmation email at %v\n", firstname, lastname, userTickets, email)
 	fmt.Printf("We have %v tickets remaining for %v\n", remainingTickets,conferenceName)
+}
+
+func sendTicket(userTickets uint, firstname string, lastname string, email string) {
+	time.Sleep(10 * time.Second)
+	var ticket string = fmt.Sprintf("%v tickets for %v %v", userTickets, firstname, lastname)
+	fmt.Println("#######")
+	fmt.Printf("Sending ticket:\n%v to email address: %v\n", ticket, email)
+	fmt.Println("#######")
+	wg.Done()
 }
